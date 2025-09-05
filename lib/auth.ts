@@ -154,6 +154,7 @@ export async function findUserByEmail(email: string): Promise<User | null> {
       .depth(1);
     
     const users = response.objects as User[];
+    // Convert undefined to null to match return type
     return users.length > 0 ? users[0] : null;
   } catch (error) {
     if (hasStatus(error) && error.status === 404) {
@@ -173,7 +174,8 @@ export async function findUserById(id: string): Promise<User | null> {
       })
       .depth(1);
     
-    return response.object as User;
+    // Convert undefined to null to match return type
+    return response.object as User || null;
   } catch (error) {
     if (hasStatus(error) && error.status === 404) {
       return null;
