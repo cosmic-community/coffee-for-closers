@@ -1,16 +1,18 @@
 // app/profiles/[slug]/page.tsx
-import { getUserProfile } from '@/lib/cosmic'
-import ProfileDetails from '@/components/ProfileDetails'
 import { notFound } from 'next/navigation'
+import ProfileDetails from '@/components/ProfileDetails'
+import { getUserProfile } from '@/lib/cosmic'
 
 interface ProfilePageProps {
   params: Promise<{ slug: string }>
 }
 
 export default async function ProfilePage({ params }: ProfilePageProps) {
+  // IMPORTANT: In Next.js 15+, params are now Promises and MUST be awaited
   const { slug } = await params
+  
   const profile = await getUserProfile(slug)
-
+  
   if (!profile) {
     notFound()
   }
@@ -20,4 +22,20 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
       <ProfileDetails profile={profile} />
     </div>
   )
+}
+
+export async function generateMetadata({ params }: ProfilePageProps) {
+  const { slug } = await params
+  const profile = await getUserProfile(slug)
+  
+  if (!profile) {
+    return {
+      title: 'Profile Not Found',
+    }
+  }
+
+  return {
+    title: `${profile.metadata.display_name} - Coffee for Closers`,
+    description: profile.metadata.bio,
+  }
 }
