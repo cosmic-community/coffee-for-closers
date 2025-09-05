@@ -1,3 +1,5 @@
+import Link from 'next/link'
+
 export default function Hero() {
   return (
     <section className="bg-gradient-to-br from-blue-50 to-indigo-100 py-20">
@@ -14,12 +16,12 @@ export default function Hero() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
-            <button className="btn-primary text-lg px-8 py-3">
+            <Link href="/signup" className="btn-primary text-lg px-8 py-3">
               Join the Network
-            </button>
-            <button className="btn-secondary text-lg px-8 py-3">
+            </Link>
+            <Link href="/profiles" className="btn-secondary text-lg px-8 py-3">
               Browse Profiles
-            </button>
+            </Link>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16">

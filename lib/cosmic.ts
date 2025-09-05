@@ -1,5 +1,5 @@
 import { createBucketClient } from '@cosmicjs/sdk'
-import type { UserProfile, Topic, CoffeeChat, CosmicResponse } from '@/types'
+import type { UserProfile, Topic, CoffeeChat, CosmicResponse, CreateUserProfileData } from '@/types'
 
 export const cosmic = createBucketClient({
   bucketSlug: process.env.COSMIC_BUCKET_SLUG as string,
@@ -63,6 +63,49 @@ export async function getAvailableUsers(): Promise<UserProfile[]> {
       return [];
     }
     throw new Error('Failed to fetch available users');
+  }
+}
+
+export async function createUserProfile(data: any): Promise<UserProfile> {
+  try {
+    // Generate slug from display name
+    const slug = data.display_name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '')
+
+    // Map experience level to the format expected by Cosmic
+    const experienceLevelMap: Record<string, string> = {
+      'junior': 'Junior (0-2 years)',
+      'mid': 'Mid-level (3-5 years)', 
+      'senior': 'Senior (6-10 years)',
+      'executive': 'Executive (10+ years)'
+    }
+
+    const response = await cosmic.objects.insertOne({
+      type: 'user-profiles',
+      title: data.display_name,
+      slug: slug,
+      metadata: {
+        display_name: data.display_name,
+        job_title: data.job_title,
+        company: data.company,
+        experience_level: {
+          key: data.experience_level,
+          value: experienceLevelMap[data.experience_level] || data.experience_level
+        },
+        location: data.location,
+        bio: data.bio,
+        linkedin_url: data.linkedin_url || '',
+        topics_of_interest: data.topics_of_interest || [],
+        available_for_matching: data.available_for_matching !== false
+      }
+    });
+    
+    return response.object as UserProfile;
+  } catch (error) {
+    console.error('Error creating user profile:', error);
+    throw new Error('Failed to create user profile');
   }
 }
 
