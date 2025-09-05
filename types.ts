@@ -10,6 +10,32 @@ export interface CosmicObject {
   modified_at: string;
 }
 
+// User interface (for authentication)
+export interface User extends CosmicObject {
+  type: 'users';
+  metadata: {
+    email: string;
+    password_hash: string;
+    display_name: string;
+    job_title: string;
+    company: string;
+    experience_level: {
+      key: string;
+      value: string;
+    };
+    location: string;
+    profile_image?: {
+      url: string;
+      imgix_url: string;
+    };
+    bio: string;
+    linkedin_url?: string;
+    topics_of_interest?: Topic[] | string[];
+    available_for_matching: boolean;
+    created_at: string;
+  };
+}
+
 // User Profile interface
 export interface UserProfile extends CosmicObject {
   type: 'user-profiles';
@@ -73,12 +99,38 @@ export interface CosmicResponse<T> {
   skip?: number;
 }
 
+// Authentication types
+export interface AuthContextType {
+  user: User | null;
+  login: (email: string, password: string) => Promise<boolean>;
+  signup: (data: SignupData) => Promise<boolean>;
+  logout: () => void;
+  loading: boolean;
+}
+
+export interface SignupData {
+  email: string;
+  password: string;
+  display_name: string;
+  job_title: string;
+  company: string;
+  experience_level: string;
+  location: string;
+  bio?: string;
+  linkedin_url?: string;
+  topics_of_interest?: string[];
+}
+
 // Type literals for select-dropdown values
 export type ExperienceLevel = 'junior' | 'mid' | 'senior' | 'executive';
 export type TopicCategory = 'methodology' | 'industry' | 'tools' | 'career';
 export type ChatStatus = 'scheduled' | 'completed' | 'cancelled' | 'no-show';
 
 // Type guards
+export function isUser(obj: CosmicObject): obj is User {
+  return obj.type === 'users';
+}
+
 export function isUserProfile(obj: CosmicObject): obj is UserProfile {
   return obj.type === 'user-profiles';
 }
