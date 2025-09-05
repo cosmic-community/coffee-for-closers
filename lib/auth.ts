@@ -174,8 +174,10 @@ export async function findUserById(id: string): Promise<User | null> {
       })
       .depth(1);
     
-    // Convert undefined to null to match return type
-    return response.object as User || null;
+    // The Cosmic SDK's findOne method returns { object: T | undefined }
+    // We need to explicitly handle the undefined case and convert to null
+    const user = response.object as User | undefined;
+    return user || null;
   } catch (error) {
     if (hasStatus(error) && error.status === 404) {
       return null;
