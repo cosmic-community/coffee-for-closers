@@ -24,6 +24,7 @@ export interface SignupData {
   location: string;
   bio?: string;
   linkedin_url?: string;
+  zoom_link?: string;
   topics_of_interest?: string[];
 }
 
@@ -109,6 +110,7 @@ export async function createUser(data: SignupData): Promise<User> {
         location: data.location,
         bio: data.bio || '',
         linkedin_url: data.linkedin_url || '',
+        zoom_link: data.zoom_link || '',
         topics_of_interest: data.topics_of_interest || [],
         available_for_matching: true,
         created_at: new Date().toISOString()
@@ -198,6 +200,7 @@ export async function updateUserProfile(userId: string, updates: Partial<SignupD
     if (updates.location) updateData.location = updates.location;
     if (updates.bio !== undefined) updateData.bio = updates.bio;
     if (updates.linkedin_url !== undefined) updateData.linkedin_url = updates.linkedin_url;
+    if (updates.zoom_link !== undefined) updateData.zoom_link = updates.zoom_link;
     if (updates.topics_of_interest) updateData.topics_of_interest = updates.topics_of_interest;
     
     if (updates.experience_level) {

@@ -68,8 +68,8 @@ export default function ProfileDetails({ profile }: ProfileDetailsProps) {
               )}
             </div>
 
-            {profile.metadata.linkedin_url && (
-              <div>
+            <div className="flex flex-wrap gap-3">
+              {profile.metadata.linkedin_url && (
                 <a
                   href={profile.metadata.linkedin_url}
                   target="_blank"
@@ -78,8 +78,19 @@ export default function ProfileDetails({ profile }: ProfileDetailsProps) {
                 >
                   LinkedIn Profile →
                 </a>
-              </div>
-            )}
+              )}
+              
+              {profile.metadata.zoom_link && (
+                <a
+                  href={profile.metadata.zoom_link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-500 font-medium transition-colors"
+                >
+                  📹 Personal Zoom Room →
+                </a>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -136,6 +147,11 @@ export default function ProfileDetails({ profile }: ProfileDetailsProps) {
             </h3>
             <p className="text-gray-600 mb-4">
               Start a conversation with {profile.metadata.display_name.split(' ')[0]} over coffee
+              {profile.metadata.zoom_link && (
+                <span className="block text-sm mt-1">
+                  They have a personal Zoom room ready for quick connections!
+                </span>
+              )}
             </p>
             <button className="btn-primary">
               Schedule Coffee Chat
