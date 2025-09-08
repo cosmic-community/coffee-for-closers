@@ -1,41 +1,110 @@
+'use client'
+
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import ProfileCard from '@/components/ProfileCard'
+import {
+  Box,
+  Container,
+  Typography,
+  Grid,
+  Button,
+  CircularProgress,
+} from '@mui/material'
+import {
+  ArrowForward as ArrowForwardIcon,
+} from '@mui/icons-material'
+import ProfileCard from './ProfileCard'
 import type { UserProfile } from '@/types'
 
-interface FeaturedProfilesProps {
-  profiles: UserProfile[]
-}
+export default function FeaturedProfiles() {
+  const [profiles, setProfiles] = useState<UserProfile[]>([])
+  const [loading, setLoading] = useState(true)
 
-export default function FeaturedProfiles({ profiles }: FeaturedProfilesProps) {
-  if (!profiles || profiles.length === 0) {
-    return null
+  useEffect(() => {
+    async function fetchProfiles() {
+      try {
+        const response = await fetch('/api/profiles')
+        const data = await response.json()
+        // Show first 3 profiles as featured
+        setProfiles(data.slice(0, 3))
+      } catch (error) {
+        console.error('Failed to fetch profiles:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchProfiles()
+  }, [])
+
+  if (loading) {
+    return (
+      <Box sx={{ py: 8, textAlign: 'center' }}>
+        <Container maxWidth="lg">
+          <CircularProgress />
+        </Container>
+      </Box>
+    )
   }
 
   return (
-    <section>
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">
+    <Box sx={{ py: 8, backgroundColor: 'background.paper' }}>
+      <Container maxWidth="lg">
+        <Box sx={{ textAlign: 'center', mb: 6 }}>
+          <Typography 
+            variant="h2" 
+            sx={{ 
+              fontWeight: 700,
+              mb: 2,
+              background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+              backgroundClip: 'text',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+            }}
+          >
             Featured Professionals
-          </h2>
-          <p className="text-gray-600">
-            Connect with experienced sales professionals in our community
-          </p>
-        </div>
-        
-        <Link 
-          href="/profiles" 
-          className="text-primary hover:text-primary/80 font-medium transition-colors"
-        >
-          View All Profiles →
-        </Link>
-      </div>
+          </Typography>
+          <Typography variant="h6" color="text.secondary" sx={{ maxWidth: '600px', mx: 'auto' }}>
+            Connect with experienced sales professionals from top companies
+          </Typography>
+        </Box>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {profiles.map((profile) => (
-          <ProfileCard key={profile.id} profile={profile} />
-        ))}
-      </div>
-    </section>
+        {profiles.length > 0 ? (
+          <>
+            <Grid container spacing={4} sx={{ mb: 6 }}>
+              {profiles.map((profile) => (
+                <Grid item xs={12} sm={6} lg={4} key={profile.id}>
+                  <ProfileCard profile={profile} />
+                </Grid>
+              ))}
+            </Grid>
+
+            <Box sx={{ textAlign: 'center' }}>
+              <Button
+                variant="contained"
+                size="large"
+                component={Link}
+                href="/profiles"
+                endIcon={<ArrowForwardIcon />}
+                sx={{
+                  px: 4,
+                  py: 1.5,
+                  fontSize: '1.1rem',
+                  fontWeight: 600,
+                }}
+              >
+                View All Profiles
+              </Button>
+            </Box>
+          </>
+        ) : (
+          <Box sx={{ textAlign: 'center', py: 4 }}>
+            <Typography variant="h6" color="text.secondary">
+              No profiles available at the moment
+            </Typography>
+          </Box>
+        )}
+      </Container>
+    </Box>
   )
 }

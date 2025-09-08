@@ -1,86 +1,152 @@
+'use client'
+
 import Link from 'next/link'
 import type { UserProfile } from '@/types'
+import {
+  Card,
+  CardContent,
+  CardActions,
+  Typography,
+  Avatar,
+  Chip,
+  Box,
+  Button,
+  Stack,
+} from '@mui/material'
+import {
+  LocationOn as LocationIcon,
+  Business as BusinessIcon,
+  ArrowForward as ArrowForwardIcon,
+} from '@mui/icons-material'
 
 interface ProfileCardProps {
   profile: UserProfile
 }
 
 export default function ProfileCard({ profile }: ProfileCardProps) {
-  const getBadgeClass = (category: string) => {
+  const getBadgeColor = (category: string) => {
     switch (category) {
       case 'Sales Methodology':
-        return 'badge-methodology'
+        return 'primary'
       case 'Industry Focus':
-        return 'badge-industry'
+        return 'secondary'
       case 'Tools & Technology':
-        return 'badge-tools'
+        return 'success'
       case 'Career Development':
-        return 'badge-career'
+        return 'warning'
       default:
-        return 'badge-methodology'
+        return 'default'
     }
   }
 
   return (
-    <div className="card hover:shadow-md transition-shadow">
-      <div className="flex items-start gap-4">
-        {profile.metadata.profile_image && (
-          <img
-            src={`${profile.metadata.profile_image.imgix_url}?w=120&h=120&fit=crop&auto=format,compress`}
+    <Card
+      sx={{
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+        '&:hover': {
+          transform: 'translateY(-4px)',
+          boxShadow: (theme) => theme.shadows[8],
+        },
+      }}
+    >
+      <CardContent sx={{ flexGrow: 1, p: 3 }}>
+        <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, mb: 2 }}>
+          <Avatar
+            src={
+              profile.metadata.profile_image?.imgix_url 
+                ? `${profile.metadata.profile_image.imgix_url}?w=120&h=120&fit=crop&auto=format,compress`
+                : undefined
+            }
             alt={profile.metadata.display_name}
-            width="60"
-            height="60"
-            className="w-15 h-15 rounded-full object-cover"
-          />
-        )}
-        
-        <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between mb-2">
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 truncate">
-                {profile.metadata.display_name}
-              </h3>
-              <p className="text-sm text-gray-600">
-                {profile.metadata.job_title} at {profile.metadata.company}
-              </p>
-            </div>
-            
-            <span className="badge bg-gray-100 text-gray-800 ml-2 flex-shrink-0">
-              {profile.metadata.experience_level.value}
-            </span>
-          </div>
-
-          <p className="text-sm text-gray-600 mb-3 line-clamp-2">
-            {profile.metadata.bio}
-          </p>
-
-          <div className="flex flex-wrap gap-1 mb-4">
-            {profile.metadata.topics_of_interest && 
-             Array.isArray(profile.metadata.topics_of_interest) &&
-             profile.metadata.topics_of_interest.slice(0, 2).map((topic: any, index: number) => (
-              <span 
-                key={index}
-                className={`badge ${getBadgeClass(topic.metadata?.category?.value || '')}`}
-              >
-                {topic.metadata?.topic_name || topic.title}
-              </span>
-            ))}
-          </div>
-
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-gray-500">
-              📍 {profile.metadata.location}
-            </span>
-            
-            <Link 
-              href={`/profiles/${profile.slug}`}
-              className="text-primary hover:text-primary/80 text-sm font-medium transition-colors"
+            sx={{ width: 60, height: 60 }}
+          >
+            {profile.metadata.display_name.charAt(0).toUpperCase()}
+          </Avatar>
+          
+          <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+            <Typography
+              variant="h6"
+              sx={{
+                fontWeight: 600,
+                mb: 0.5,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}
             >
-              View Profile →
-            </Link>
-          </div>
-        </div>
-      </div>
-    </div>
+              {profile.metadata.display_name}
+            </Typography>
+            
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 1 }}>
+              <BusinessIcon sx={{ fontSize: '0.875rem', color: 'text.secondary' }} />
+              <Typography variant="body2" color="text.secondary" noWrap>
+                {profile.metadata.job_title} at {profile.metadata.company}
+              </Typography>
+            </Box>
+
+            <Chip
+              label={profile.metadata.experience_level.value}
+              size="small"
+              color="primary"
+              variant="outlined"
+            />
+          </Box>
+        </Box>
+
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          sx={{
+            mb: 2,
+            display: '-webkit-box',
+            WebkitLineClamp: 3,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
+            lineHeight: 1.5,
+          }}
+        >
+          {profile.metadata.bio}
+        </Typography>
+
+        <Stack direction="row" spacing={0.5} sx={{ mb: 2, flexWrap: 'wrap', gap: 0.5 }}>
+          {profile.metadata.topics_of_interest && 
+           Array.isArray(profile.metadata.topics_of_interest) &&
+           profile.metadata.topics_of_interest.slice(0, 2).map((topic: any, index: number) => (
+            <Chip
+              key={index}
+              label={topic.metadata?.topic_name || topic.title}
+              size="small"
+              color={getBadgeColor(topic.metadata?.category?.value || '') as any}
+              variant="filled"
+              sx={{ fontSize: '0.75rem' }}
+            />
+          ))}
+        </Stack>
+
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+          <LocationIcon sx={{ fontSize: '0.875rem', color: 'text.secondary' }} />
+          <Typography variant="body2" color="text.secondary" noWrap>
+            {profile.metadata.location}
+          </Typography>
+        </Box>
+      </CardContent>
+
+      <CardActions sx={{ p: 2, pt: 0 }}>
+        <Button
+          component={Link}
+          href={`/profiles/${profile.slug}`}
+          variant="contained"
+          size="small"
+          endIcon={<ArrowForwardIcon />}
+          fullWidth
+          sx={{ fontWeight: 500 }}
+        >
+          View Profile
+        </Button>
+      </CardActions>
+    </Card>
   )
 }

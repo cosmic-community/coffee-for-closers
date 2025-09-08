@@ -1,69 +1,106 @@
 'use client'
 
 import { useState } from 'react'
+import {
+  Card,
+  CardContent,
+  Typography,
+  FormControl,
+  FormLabel,
+  RadioGroup,
+  FormControlLabel,
+  Radio,
+  Box,
+} from '@mui/material'
 
 interface ExperienceFilterProps {
   onFilterChange: (level: string) => void
 }
 
 export default function ExperienceFilter({ onFilterChange }: ExperienceFilterProps) {
-  const [selectedLevel, setSelectedLevel] = useState<string>('all')
+  const [selectedLevel, setSelectedLevel] = useState('all')
 
-  const experienceLevels = [
-    { key: 'all', label: 'All Levels' },
-    { key: 'junior', label: 'Junior (0-2 years)' },
-    { key: 'mid', label: 'Mid-level (3-5 years)' },
-    { key: 'senior', label: 'Senior (6-10 years)' },
-    { key: 'executive', label: 'Executive (10+ years)' }
-  ]
-
-  const handleFilterChange = (level: string) => {
-    setSelectedLevel(level)
-    onFilterChange(level)
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value
+    setSelectedLevel(value)
+    onFilterChange(value)
   }
 
-  return (
-    <div className="card">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">
-        Experience Level
-      </h3>
-      
-      <div className="space-y-2">
-        {experienceLevels.map((level) => (
-          <button
-            key={level.key}
-            onClick={() => handleFilterChange(level.key)}
-            className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
-              selectedLevel === level.key
-                ? 'bg-primary/10 text-primary font-medium'
-                : 'hover:bg-gray-50 text-gray-700'
-            }`}
-          >
-            {level.label}
-          </button>
-        ))}
-      </div>
+  const experienceLevels = [
+    { value: 'all', label: 'All Levels', count: null },
+    { value: 'junior', label: 'Junior (0-2 years)', count: 12 },
+    { value: 'mid', label: 'Mid-level (3-5 years)', count: 18 },
+    { value: 'senior', label: 'Senior (6-10 years)', count: 24 },
+    { value: 'executive', label: 'Executive (10+ years)', count: 8 },
+  ]
 
-      <div className="mt-6 pt-4 border-t border-gray-100">
-        <div className="text-xs text-gray-500 space-y-1">
-          <div className="flex items-center justify-between">
-            <span>Junior</span>
-            <span>🌱</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span>Mid-level</span>
-            <span>🌿</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span>Senior</span>
-            <span>🌳</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span>Executive</span>
-            <span>🏆</span>
-          </div>
-        </div>
-      </div>
-    </div>
+  return (
+    <Card>
+      <CardContent>
+        <Typography variant="h6" gutterBottom sx={{ fontWeight: 600, mb: 2 }}>
+          Filter by Experience
+        </Typography>
+        
+        <FormControl component="fieldset" fullWidth>
+          <FormLabel 
+            component="legend" 
+            sx={{ 
+              fontSize: '0.875rem', 
+              fontWeight: 500,
+              color: 'text.primary',
+              mb: 1,
+            }}
+          >
+            Experience Level
+          </FormLabel>
+          <RadioGroup
+            value={selectedLevel}
+            onChange={handleChange}
+            name="experience-level"
+          >
+            {experienceLevels.map((level) => (
+              <FormControlLabel
+                key={level.value}
+                value={level.value}
+                control={
+                  <Radio 
+                    size="small"
+                    sx={{
+                      '&.Mui-checked': {
+                        color: 'primary.main',
+                      },
+                    }}
+                  />
+                }
+                label={
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+                    <Typography variant="body2" sx={{ fontSize: '0.875rem' }}>
+                      {level.label}
+                    </Typography>
+                    {level.count && (
+                      <Typography 
+                        variant="body2" 
+                        color="text.secondary"
+                        sx={{ fontSize: '0.75rem' }}
+                      >
+                        ({level.count})
+                      </Typography>
+                    )}
+                  </Box>
+                }
+                sx={{
+                  m: 0,
+                  py: 0.5,
+                  '& .MuiFormControlLabel-label': {
+                    width: '100%',
+                    fontSize: '0.875rem',
+                  },
+                }}
+              />
+            ))}
+          </RadioGroup>
+        </FormControl>
+      </CardContent>
+    </Card>
   )
 }
