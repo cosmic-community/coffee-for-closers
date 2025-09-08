@@ -16,11 +16,23 @@ import {
 import ProfileCard from './ProfileCard'
 import type { UserProfile } from '@/types'
 
-export default function FeaturedProfiles() {
+interface FeaturedProfilesProps {
+  profiles?: UserProfile[]
+}
+
+export default function FeaturedProfiles({ profiles: propProfiles }: FeaturedProfilesProps) {
   const [profiles, setProfiles] = useState<UserProfile[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    // If profiles are passed as props, use them directly
+    if (propProfiles) {
+      setProfiles(propProfiles.slice(0, 3))
+      setLoading(false)
+      return
+    }
+
+    // Otherwise, fetch profiles from API
     async function fetchProfiles() {
       try {
         const response = await fetch('/api/profiles')
@@ -35,7 +47,7 @@ export default function FeaturedProfiles() {
     }
 
     fetchProfiles()
-  }, [])
+  }, [propProfiles])
 
   if (loading) {
     return (
