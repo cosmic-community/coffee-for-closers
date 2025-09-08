@@ -154,8 +154,9 @@ export async function findUserByEmail(email: string): Promise<User | null> {
       .depth(1);
     
     const users = response.objects as User[];
-    // Convert undefined to null to match return type
-    return users.length > 0 ? users[0] : null;
+    // Explicitly handle the undefined case by checking array bounds
+    const firstUser = users.length > 0 ? users[0] : undefined;
+    return firstUser !== undefined ? firstUser : null;
   } catch (error) {
     if (hasStatus(error) && error.status === 404) {
       return null;
