@@ -1,16 +1,17 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
-import './globals.css'
+import { AuthProvider } from '@/contexts/AuthContext'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
-import { AuthProvider } from '@/contexts/AuthContext'
 import CosmicBadge from '@/components/CosmicBadge'
+import './globals.css'
 
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: 'Coffee for Closers - Sales Professional Network',
-  description: 'Connect with sales professionals over virtual coffee chats. Build your network, share knowledge, and advance your career.',
+  description: 'Connect with sales professionals through weekly coffee chats. Share knowledge, build relationships, and grow your sales career.',
+  keywords: 'sales, networking, coffee chats, sales professionals, business development',
 }
 
 export default function RootLayout({
@@ -19,14 +20,14 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   const bucketSlug = process.env.COSMIC_BUCKET_SLUG as string
-  
+
   return (
     <html lang="en">
       <body className={inter.className}>
         <AuthProvider>
-          <div className="min-h-screen bg-gray-50">
+          <div className="min-h-screen">
             <Header />
-            <main>
+            <main className="pt-16">
               {children}
             </main>
             <Footer />

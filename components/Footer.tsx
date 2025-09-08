@@ -1,79 +1,191 @@
+'use client'
+
 import Link from 'next/link'
+import {
+  Box,
+  Container,
+  Typography,
+  Grid,
+  Stack,
+  IconButton,
+  Divider,
+} from '@mui/material'
+import {
+  LinkedIn as LinkedInIcon,
+  Twitter as TwitterIcon,
+  GitHub as GitHubIcon,
+  Coffee as CoffeeIcon,
+} from '@mui/icons-material'
 
 export default function Footer() {
   return (
-    <footer className="bg-gray-50 border-t border-border mt-16">
-      <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          <div className="col-span-1 md:col-span-2">
-            <Link href="/" className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">☕</span>
-              </div>
-              <span className="font-bold text-xl text-gray-900">
+    <Box
+      component="footer"
+      sx={{
+        backgroundColor: 'grey.900',
+        color: 'white',
+        py: 6,
+        mt: 'auto',
+      }}
+    >
+      <Container maxWidth="lg">
+        <Grid container spacing={4}>
+          <Grid item xs={12} md={4}>
+            <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+              <CoffeeIcon sx={{ mr: 1, fontSize: '2rem' }} />
+              <Typography variant="h5" sx={{ fontWeight: 700 }}>
                 Coffee for Closers
-              </span>
-            </Link>
-            <p className="text-gray-600 mb-4">
-              Connecting software sales professionals through meaningful virtual coffee chats. 
-              Build your network, share knowledge, and advance your career.
-            </p>
-          </div>
+              </Typography>
+            </Box>
+            <Typography variant="body2" sx={{ mb: 3, opacity: 0.8 }}>
+              Connecting sales professionals through meaningful conversations and shared experiences. 
+              Build your network, share knowledge, and accelerate your career.
+            </Typography>
+            <Stack direction="row" spacing={1}>
+              <IconButton
+                size="small"
+                sx={{ 
+                  color: 'white',
+                  '&:hover': { backgroundColor: 'rgba(255,255,255,0.1)' }
+                }}
+              >
+                <LinkedInIcon />
+              </IconButton>
+              <IconButton
+                size="small"
+                sx={{ 
+                  color: 'white',
+                  '&:hover': { backgroundColor: 'rgba(255,255,255,0.1)' }
+                }}
+              >
+                <TwitterIcon />
+              </IconButton>
+              <IconButton
+                size="small"
+                sx={{ 
+                  color: 'white',
+                  '&:hover': { backgroundColor: 'rgba(255,255,255,0.1)' }
+                }}
+              >
+                <GitHubIcon />
+              </IconButton>
+            </Stack>
+          </Grid>
 
-          <div>
-            <h3 className="font-semibold text-gray-900 mb-4">Network</h3>
-            <ul className="space-y-2">
-              <li>
-                <Link href="/profiles" className="text-gray-600 hover:text-gray-900 transition-colors">
-                  Browse Profiles
-                </Link>
-              </li>
-              <li>
-                <Link href="/chats" className="text-gray-600 hover:text-gray-900 transition-colors">
-                  Coffee Chats
-                </Link>
-              </li>
-              <li>
-                <Link href="/topics" className="text-gray-600 hover:text-gray-900 transition-colors">
-                  Sales Topics
-                </Link>
-              </li>
-            </ul>
-          </div>
+          <Grid item xs={12} sm={6} md={2}>
+            <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
+              Platform
+            </Typography>
+            <Stack spacing={1}>
+              {[
+                { label: 'Browse Profiles', href: '/profiles' },
+                { label: 'Coffee Chats', href: '/chats' },
+                { label: 'Join Community', href: '/signup' },
+              ].map((link) => (
+                <Typography
+                  key={link.label}
+                  variant="body2"
+                  component={Link}
+                  href={link.href}
+                  sx={{
+                    color: 'rgba(255,255,255,0.7)',
+                    textDecoration: 'none',
+                    '&:hover': {
+                      color: 'white',
+                      textDecoration: 'underline',
+                    },
+                  }}
+                >
+                  {link.label}
+                </Typography>
+              ))}
+            </Stack>
+          </Grid>
 
-          <div>
-            <h3 className="font-semibold text-gray-900 mb-4">Company</h3>
-            <ul className="space-y-2">
-              <li>
-                <Link href="/about" className="text-gray-600 hover:text-gray-900 transition-colors">
-                  About
-                </Link>
-              </li>
-              <li>
-                <Link href="/contact" className="text-gray-600 hover:text-gray-900 transition-colors">
-                  Contact
-                </Link>
-              </li>
-              <li>
-                <Link href="/privacy" className="text-gray-600 hover:text-gray-900 transition-colors">
-                  Privacy
-                </Link>
-              </li>
-            </ul>
-          </div>
-        </div>
+          <Grid item xs={12} sm={6} md={2}>
+            <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
+              Resources
+            </Typography>
+            <Stack spacing={1}>
+              {[
+                { label: 'Help Center', href: '/help' },
+                { label: 'Community Guidelines', href: '/guidelines' },
+                { label: 'Contact Us', href: '/contact' },
+              ].map((link) => (
+                <Typography
+                  key={link.label}
+                  variant="body2"
+                  component={Link}
+                  href={link.href}
+                  sx={{
+                    color: 'rgba(255,255,255,0.7)',
+                    textDecoration: 'none',
+                    '&:hover': {
+                      color: 'white',
+                      textDecoration: 'underline',
+                    },
+                  }}
+                >
+                  {link.label}
+                </Typography>
+              ))}
+            </Stack>
+          </Grid>
 
-        <div className="border-t border-border pt-8 mt-8">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <p className="text-gray-600 text-sm">
-              © 2024 Coffee for Closers. All rights reserved.
-            </p>
-            <p className="text-gray-600 text-sm mt-4 md:mt-0">
-              Built with ❤️ for the sales community
-            </p>
-          </div>
-        </div>
-      </div>
-    </footer>
+          <Grid item xs={12} md={4}>
+            <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
+              Stay Updated
+            </Typography>
+            <Typography variant="body2" sx={{ mb: 2, opacity: 0.8 }}>
+              Get weekly insights, tips, and updates from the sales community.
+            </Typography>
+            <Box sx={{ display: 'flex', gap: 1 }}>
+              {/* Newsletter signup could go here */}
+            </Box>
+          </Grid>
+        </Grid>
+
+        <Divider sx={{ my: 4, borderColor: 'rgba(255,255,255,0.1)' }} />
+
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: { xs: 'column', sm: 'row' },
+            justifyContent: 'space-between',
+            alignItems: { xs: 'flex-start', sm: 'center' },
+            gap: 2,
+          }}
+        >
+          <Typography variant="body2" sx={{ opacity: 0.7 }}>
+            © 2024 Coffee for Closers. All rights reserved.
+          </Typography>
+          
+          <Stack direction="row" spacing={3}>
+            {[
+              { label: 'Privacy Policy', href: '/privacy' },
+              { label: 'Terms of Service', href: '/terms' },
+              { label: 'Cookies', href: '/cookies' },
+            ].map((link) => (
+              <Typography
+                key={link.label}
+                variant="body2"
+                component={Link}
+                href={link.href}
+                sx={{
+                  color: 'rgba(255,255,255,0.7)',
+                  textDecoration: 'none',
+                  '&:hover': {
+                    color: 'white',
+                    textDecoration: 'underline',
+                  },
+                }}
+              >
+                {link.label}
+              </Typography>
+            ))}
+          </Stack>
+        </Box>
+      </Container>
+    </Box>
   )
 }
