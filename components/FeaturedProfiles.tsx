@@ -1,6 +1,5 @@
 'use client'
 
-import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import {
   Box,
@@ -17,47 +16,12 @@ import ProfileCard from './ProfileCard'
 import type { UserProfile } from '@/types'
 
 interface FeaturedProfilesProps {
-  profiles?: UserProfile[]
+  profiles: UserProfile[]
 }
 
-export default function FeaturedProfiles({ profiles: propProfiles }: FeaturedProfilesProps) {
-  const [profiles, setProfiles] = useState<UserProfile[]>([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    // If profiles are passed as props, use them directly
-    if (propProfiles) {
-      setProfiles(propProfiles.slice(0, 3))
-      setLoading(false)
-      return
-    }
-
-    // Otherwise, fetch profiles from API
-    async function fetchProfiles() {
-      try {
-        const response = await fetch('/api/profiles')
-        const data = await response.json()
-        // Show first 3 profiles as featured
-        setProfiles(data.slice(0, 3))
-      } catch (error) {
-        console.error('Failed to fetch profiles:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchProfiles()
-  }, [propProfiles])
-
-  if (loading) {
-    return (
-      <Box sx={{ py: 8, textAlign: 'center' }}>
-        <Container maxWidth="lg">
-          <CircularProgress />
-        </Container>
-      </Box>
-    )
-  }
+export default function FeaturedProfiles({ profiles }: FeaturedProfilesProps) {
+  // Show first 3 profiles as featured
+  const featuredProfiles = profiles.slice(0, 3)
 
   return (
     <Box sx={{ py: 8, backgroundColor: 'background.paper' }}>
@@ -81,10 +45,10 @@ export default function FeaturedProfiles({ profiles: propProfiles }: FeaturedPro
           </Typography>
         </Box>
 
-        {profiles.length > 0 ? (
+        {featuredProfiles.length > 0 ? (
           <>
             <Grid container spacing={4} sx={{ mb: 6 }}>
-              {profiles.map((profile) => (
+              {featuredProfiles.map((profile) => (
                 <Grid item xs={12} sm={6} lg={4} key={profile.id}>
                   <ProfileCard profile={profile} />
                 </Grid>
