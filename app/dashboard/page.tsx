@@ -42,6 +42,10 @@ export default function DashboardPage() {
     }
   }
 
+  const handleEditProfile = () => {
+    router.push('/profile/edit')
+  }
+
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -202,7 +206,10 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            <button className="w-full mt-4 btn-secondary text-sm">
+            <button 
+              onClick={handleEditProfile}
+              className="w-full mt-4 btn-secondary text-sm"
+            >
               Edit Profile
             </button>
           </div>
