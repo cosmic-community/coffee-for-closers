@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import { AuthProvider } from '@/contexts/AuthContext'
-import { ThemeProvider } from '@/contexts/ThemeContext'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import CosmicBadge from '@/components/CosmicBadge'
@@ -25,18 +24,16 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <ThemeProvider>
-          <AuthProvider>
-            <div className="min-h-screen bg-gray-50">
-              <Header />
-              <main className="flex-1">
-                {children}
-              </main>
-              <Footer />
-            </div>
-            <CosmicBadge bucketSlug={bucketSlug} />
-          </AuthProvider>
-        </ThemeProvider>
+        <AuthProvider>
+          <div className="min-h-screen">
+            <Header />
+            <main className="pt-16">
+              {children}
+            </main>
+            <Footer />
+          </div>
+          <CosmicBadge bucketSlug={bucketSlug} />
+        </AuthProvider>
       </body>
     </html>
   )

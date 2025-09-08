@@ -16,9 +16,13 @@ export default async function HomePage() {
     return (
       <div className="min-h-screen">
         <Hero />
-        <TopicCategories topics={topics} />
-        <FeaturedProfiles profiles={profiles} />
-        <UpcomingChats chats={chats} />
+        <div className="relative z-10 bg-white/50 backdrop-blur-sm">
+          <div className="container mx-auto px-4">
+            <TopicCategories topics={topics} />
+            <FeaturedProfiles profiles={profiles} />
+            <UpcomingChats chats={chats} />
+          </div>
+        </div>
       </div>
     )
   } catch (error) {
@@ -28,9 +32,13 @@ export default async function HomePage() {
     return (
       <div className="min-h-screen">
         <Hero />
-        <TopicCategories topics={[]} />
-        <FeaturedProfiles profiles={[]} />
-        <UpcomingChats chats={[]} />
+        <div className="relative z-10 bg-white/50 backdrop-blur-sm">
+          <div className="container mx-auto px-4">
+            <TopicCategories topics={[]} />
+            <FeaturedProfiles profiles={[]} />
+            <UpcomingChats chats={[]} />
+          </div>
+        </div>
       </div>
     )
   }

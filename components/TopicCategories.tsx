@@ -34,77 +34,86 @@ export default function TopicCategories({ topics }: TopicCategoriesProps) {
     }
   }
 
-  const getCategoryColor = (category: string) => {
+  const getCategoryGradient = (category: string) => {
     switch (category) {
       case 'Sales Methodology':
-        return 'bg-blue-50 border-blue-200'
+        return 'from-blue-400 to-blue-600'
       case 'Industry Focus':
-        return 'bg-green-50 border-green-200'
+        return 'from-green-400 to-green-600'
       case 'Tools & Technology':
-        return 'bg-purple-50 border-purple-200'
+        return 'from-purple-400 to-purple-600'
       case 'Career Development':
-        return 'bg-orange-50 border-orange-200'
+        return 'from-orange-400 to-orange-600'
       default:
-        return 'bg-gray-50 border-gray-200'
+        return 'from-gray-400 to-gray-600'
     }
   }
 
   return (
-    <section>
-      <div className="mb-8">
-        <h2 className="text-3xl font-bold text-gray-900 mb-2">
-          Discussion Topics
-        </h2>
-        <p className="text-gray-600">
-          Explore sales topics and connect with professionals who share your interests
-        </p>
-      </div>
+    <section className="py-20 relative">
+      <div className="container mx-auto px-4">
+        <div className="text-center mb-16">
+          <h2 className="text-4xl md:text-5xl font-bold gradient-text mb-6">
+            Discussion Topics
+          </h2>
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            Explore sales topics and connect with professionals who share your interests
+          </p>
+        </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {Object.entries(topicsByCategory).map(([category, categoryTopics]) => (
-          <div
-            key={category}
-            className={`card ${getCategoryColor(category)}`}
-          >
-            <div className="flex items-center gap-3 mb-4">
-              <div className="text-2xl">
-                {getCategoryIcon(category)}
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900">
-                  {category}
-                </h3>
-                <p className="text-sm text-gray-600">
-                  {categoryTopics.length} topic{categoryTopics.length !== 1 ? 's' : ''}
-                </p>
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              {categoryTopics.slice(0, 3).map((topic) => (
-                <div key={topic.id} className="flex items-start gap-3">
-                  <div className="w-2 h-2 bg-gray-400 rounded-full mt-2 flex-shrink-0" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto">
+          {Object.entries(topicsByCategory).map(([category, categoryTopics], index) => (
+            <div
+              key={category}
+              className={`card relative overflow-hidden ${index % 2 === 0 ? 'md:-rotate-1' : 'md:rotate-1'} hover:rotate-0 transition-transform duration-300`}
+            >
+              {/* Background Gradient */}
+              <div className={`absolute top-0 right-0 w-24 h-24 bg-gradient-to-br ${getCategoryGradient(category)} opacity-10 rounded-full -mr-12 -mt-12`}></div>
+              
+              <div className="relative z-10">
+                <div className="flex items-center gap-4 mb-6">
+                  <div className={`w-16 h-16 bg-gradient-to-br ${getCategoryGradient(category)} rounded-2xl flex items-center justify-center text-2xl shadow-lg`}>
+                    {getCategoryIcon(category)}
+                  </div>
                   <div>
-                    <h4 className="font-medium text-gray-900 text-sm">
-                      {topic.metadata.topic_name}
-                    </h4>
-                    {topic.metadata.description && (
-                      <p className="text-xs text-gray-600 mt-1">
-                        {topic.metadata.description}
-                      </p>
-                    )}
+                    <h3 className="text-2xl font-bold text-gray-900 mb-1">
+                      {category}
+                    </h3>
+                    <p className="text-gray-600 font-medium">
+                      {categoryTopics.length} topic{categoryTopics.length !== 1 ? 's' : ''}
+                    </p>
                   </div>
                 </div>
-              ))}
-              
-              {categoryTopics.length > 3 && (
-                <p className="text-xs text-gray-500 pt-2">
-                  +{categoryTopics.length - 3} more topics
-                </p>
-              )}
+
+                <div className="space-y-4">
+                  {categoryTopics.slice(0, 3).map((topic) => (
+                    <div key={topic.id} className="bg-gray-50/50 rounded-xl p-4 hover:bg-white/80 transition-colors duration-200">
+                      <h4 className="font-semibold text-gray-900 mb-2">
+                        {topic.metadata.topic_name}
+                      </h4>
+                      {topic.metadata.description && (
+                        <p className="text-sm text-gray-600 leading-relaxed">
+                          {topic.metadata.description}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                  
+                  {categoryTopics.length > 3 && (
+                    <div className="text-center pt-2">
+                      <span className="inline-flex items-center gap-2 text-sm text-gray-500 bg-gray-100/50 px-4 py-2 rounded-full">
+                        <span>+{categoryTopics.length - 3} more topics</span>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </section>
   )

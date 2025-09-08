@@ -2,151 +2,112 @@
 
 import Link from 'next/link'
 import type { UserProfile } from '@/types'
-import {
-  Card,
-  CardContent,
-  CardActions,
-  Typography,
-  Avatar,
-  Chip,
-  Box,
-  Button,
-  Stack,
-} from '@mui/material'
-import {
-  LocationOn as LocationIcon,
-  Business as BusinessIcon,
-  ArrowForward as ArrowForwardIcon,
-} from '@mui/icons-material'
 
 interface ProfileCardProps {
   profile: UserProfile
 }
 
 export default function ProfileCard({ profile }: ProfileCardProps) {
-  const getBadgeColor = (category: string) => {
+  const getBadgeGradient = (category: string) => {
     switch (category) {
       case 'Sales Methodology':
-        return 'primary'
+        return 'from-blue-400 to-blue-600'
       case 'Industry Focus':
-        return 'secondary'
+        return 'from-green-400 to-green-600'
       case 'Tools & Technology':
-        return 'success'
+        return 'from-purple-400 to-purple-600'
       case 'Career Development':
-        return 'warning'
+        return 'from-orange-400 to-orange-600'
       default:
-        return 'default'
+        return 'from-gray-400 to-gray-600'
     }
   }
 
   return (
-    <Card
-      sx={{
-        height: '100%',
-        display: 'flex',
-        flexDirection: 'column',
-        transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-        '&:hover': {
-          transform: 'translateY(-4px)',
-          boxShadow: (theme) => theme.shadows[8],
-        },
-      }}
-    >
-      <CardContent sx={{ flexGrow: 1, p: 3 }}>
-        <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, mb: 2 }}>
-          <Avatar
-            src={
-              profile.metadata.profile_image?.imgix_url 
-                ? `${profile.metadata.profile_image.imgix_url}?w=120&h=120&fit=crop&auto=format,compress`
-                : undefined
-            }
+    <div className="card group cursor-pointer">
+      <div className="flex items-start gap-4 mb-6">
+        {profile.metadata.profile_image ? (
+          <img
+            src={`${profile.metadata.profile_image.imgix_url}?w=160&h=160&fit=crop&auto=format,compress`}
             alt={profile.metadata.display_name}
-            sx={{ width: 60, height: 60 }}
-          >
+            width="80"
+            height="80"
+            className="w-20 h-20 rounded-2xl object-cover shadow-lg border-4 border-white"
+          />
+        ) : (
+          <div className="w-20 h-20 rounded-2xl bg-gradient-to-r from-blue-400 to-purple-600 flex items-center justify-center text-white font-bold text-2xl shadow-lg">
             {profile.metadata.display_name.charAt(0).toUpperCase()}
-          </Avatar>
+          </div>
+        )}
+        
+        <div className="flex-1 min-w-0">
+          <h3 className="font-bold text-xl text-gray-900 mb-1 truncate group-hover:text-blue-600 transition-colors duration-200">
+            {profile.metadata.display_name}
+          </h3>
           
-          <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-            <Typography
-              variant="h6"
-              sx={{
-                fontWeight: 600,
-                mb: 0.5,
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              {profile.metadata.display_name}
-            </Typography>
-            
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 1 }}>
-              <BusinessIcon sx={{ fontSize: '0.875rem', color: 'text.secondary' }} />
-              <Typography variant="body2" color="text.secondary" noWrap>
-                {profile.metadata.job_title} at {profile.metadata.company}
-              </Typography>
-            </Box>
+          <div className="flex items-center gap-1 mb-2">
+            <span className="text-sm text-gray-600">
+              {profile.metadata.job_title}
+            </span>
+          </div>
 
-            <Chip
-              label={profile.metadata.experience_level.value}
-              size="small"
-              color="primary"
-              variant="outlined"
-            />
-          </Box>
-        </Box>
+          <div className="flex items-center gap-1 mb-3">
+            <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-5 0H3m2 0h4M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 4h1m4 0h1M9 16h1m4 0h1" />
+            </svg>
+            <span className="text-sm text-gray-500 truncate">
+              {profile.metadata.company}
+            </span>
+          </div>
 
-        <Typography
-          variant="body2"
-          color="text.secondary"
-          sx={{
-            mb: 2,
-            display: '-webkit-box',
-            WebkitLineClamp: 3,
-            WebkitBoxOrient: 'vertical',
-            overflow: 'hidden',
-            lineHeight: 1.5,
-          }}
-        >
-          {profile.metadata.bio}
-        </Typography>
+          <div className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r ${getBadgeGradient('default')} text-white`}>
+            {profile.metadata.experience_level.value}
+          </div>
+        </div>
+      </div>
 
-        <Stack direction="row" spacing={0.5} sx={{ mb: 2, flexWrap: 'wrap', gap: 0.5 }}>
-          {profile.metadata.topics_of_interest && 
-           Array.isArray(profile.metadata.topics_of_interest) &&
-           profile.metadata.topics_of_interest.slice(0, 2).map((topic: any, index: number) => (
-            <Chip
+      <p className="text-gray-600 text-sm leading-relaxed mb-6 line-clamp-3">
+        {profile.metadata.bio}
+      </p>
+
+      {profile.metadata.topics_of_interest && 
+       Array.isArray(profile.metadata.topics_of_interest) &&
+       profile.metadata.topics_of_interest.length > 0 && (
+        <div className="flex flex-wrap gap-2 mb-6">
+          {profile.metadata.topics_of_interest.slice(0, 2).map((topic: any, index: number) => (
+            <span
               key={index}
-              label={topic.metadata?.topic_name || topic.title}
-              size="small"
-              color={getBadgeColor(topic.metadata?.category?.value || '') as any}
-              variant="filled"
-              sx={{ fontSize: '0.75rem' }}
-            />
+              className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gradient-to-r ${getBadgeGradient(topic.metadata?.category?.value || '')} text-white`}
+            >
+              {topic.metadata?.topic_name || topic.title}
+            </span>
           ))}
-        </Stack>
+        </div>
+      )}
 
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-          <LocationIcon sx={{ fontSize: '0.875rem', color: 'text.secondary' }} />
-          <Typography variant="body2" color="text.secondary" noWrap>
-            {profile.metadata.location}
-          </Typography>
-        </Box>
-      </CardContent>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2 text-sm text-gray-500">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+          <span className="truncate">{profile.metadata.location}</span>
+        </div>
+        
+        {profile.metadata.available_for_matching && (
+          <div className="flex items-center gap-1">
+            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+            <span className="text-xs text-green-600 font-medium">Available</span>
+          </div>
+        )}
+      </div>
 
-      <CardActions sx={{ p: 2, pt: 0 }}>
-        <Button
-          component={Link}
-          href={`/profiles/${profile.slug}`}
-          variant="contained"
-          size="small"
-          endIcon={<ArrowForwardIcon />}
-          fullWidth
-          sx={{ fontWeight: 500 }}
-        >
-          View Profile
-        </Button>
-      </CardActions>
-    </Card>
+      <Link
+        href={`/profiles/${profile.slug}`}
+        className="absolute inset-0 z-10"
+      >
+        <span className="sr-only">View {profile.metadata.display_name}'s profile</span>
+      </Link>
+    </div>
   )
 }
