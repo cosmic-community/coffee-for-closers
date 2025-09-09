@@ -1,17 +1,15 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
-import { getTopics } from '@/lib/cosmic'
-import type { Topic } from '@/types'
+import { useRouter } from 'next/navigation'
+import type { User, Topic } from '@/types'
 
 export default function EditProfilePage() {
   const { user, loading } = useAuth()
   const router = useRouter()
+  const [saving, setSaving] = useState(false)
   const [topics, setTopics] = useState<Topic[]>([])
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
   const [formData, setFormData] = useState({
     display_name: '',
     job_title: '',
@@ -20,6 +18,7 @@ export default function EditProfilePage() {
     location: '',
     bio: '',
     linkedin_url: '',
+    zoom_link: '',
     topics_of_interest: [] as string[],
     available_for_matching: true
   })
@@ -27,10 +26,10 @@ export default function EditProfilePage() {
   useEffect(() => {
     if (!loading && !user) {
       router.push('/login')
-      return
     }
+  }, [user, loading, router])
 
-    // Populate form with current user data
+  useEffect(() => {
     if (user) {
       setFormData({
         display_name: user.metadata.display_name || '',
@@ -40,91 +39,63 @@ export default function EditProfilePage() {
         location: user.metadata.location || '',
         bio: user.metadata.bio || '',
         linkedin_url: user.metadata.linkedin_url || '',
+        zoom_link: user.metadata.zoom_link || '',
         topics_of_interest: Array.isArray(user.metadata.topics_of_interest) 
-          ? user.metadata.topics_of_interest.map((topic: any) => typeof topic === 'string' ? topic : topic.id)
+          ? user.metadata.topics_of_interest.map((topic: any) => topic.id || topic)
           : [],
         available_for_matching: user.metadata.available_for_matching !== false
       })
     }
+  }, [user])
 
-    // Fetch topics
-    const fetchTopics = async () => {
-      try {
-        const topicsData = await getTopics()
-        setTopics(topicsData)
-      } catch (error) {
-        console.error('Error fetching topics:', error)
-      }
-    }
-
+  useEffect(() => {
     fetchTopics()
-  }, [user, loading, router])
+  }, [])
 
-  const updateFormData = (field: keyof typeof formData, value: string | string[] | boolean) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }))
+  const fetchTopics = async () => {
+    try {
+      const response = await fetch('/api/topics')
+      const data = await response.json()
+      setTopics(data)
+    } catch (error) {
+      console.error('Error fetching topics:', error)
+    }
   }
 
-  const toggleTopic = (topicId: string) => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setSaving(true)
+
+    try {
+      const response = await fetch('/api/user/update-profile', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+        },
+        body: JSON.stringify(formData)
+      })
+
+      if (response.ok) {
+        router.push('/dashboard')
+      } else {
+        const error = await response.json()
+        console.error('Error updating profile:', error)
+      }
+    } catch (error) {
+      console.error('Error updating profile:', error)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleTopicToggle = (topicId: string) => {
     setFormData(prev => ({
       ...prev,
       topics_of_interest: prev.topics_of_interest.includes(topicId)
         ? prev.topics_of_interest.filter(id => id !== topicId)
         : [...prev.topics_of_interest, topicId]
     }))
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSubmitting(true)
-    setMessage(null)
-
-    try {
-      const response = await fetch('/api/user/update-profile', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
-        },
-        body: JSON.stringify(formData),
-      })
-
-      if (response.ok) {
-        const data = await response.json()
-        setMessage({ type: 'success', text: 'Profile updated successfully!' })
-        // Refresh the auth context to get updated user data
-        window.location.reload()
-      } else {
-        const error = await response.json()
-        setMessage({ type: 'error', text: error.error || 'Failed to update profile' })
-      }
-    } catch (error) {
-      setMessage({ type: 'error', text: 'Something went wrong. Please try again.' })
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
-
-  // Group topics by category
-  const topicsByCategory = topics.reduce((acc, topic) => {
-    const category = topic.metadata.category.value || 'Other'
-    if (!acc[category]) {
-      acc[category] = []
-    }
-    acc[category].push(topic)
-    return acc
-  }, {} as Record<string, Topic[]>)
-
-  const getCategoryIcon = (category: string) => {
-    switch (category) {
-      case 'Sales Methodology': return '📋'
-      case 'Industry Focus': return '🏢'
-      case 'Tools & Technology': return '⚙️'
-      case 'Career Development': return '📈'
-      default: return '🏷️'
-    }
   }
 
   if (loading) {
@@ -144,244 +115,226 @@ export default function EditProfilePage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-2xl mx-auto">
-        <div className="card">
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                Edit Your Profile
-              </h1>
-              <p className="text-gray-600">
-                Update your professional information and preferences
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() => router.back()}
-              className="text-gray-600 hover:text-gray-900 text-sm font-medium"
-            >
-              ← Back
-            </button>
-          </div>
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            Edit Your Profile
+          </h1>
+          <p className="text-gray-600">
+            Update your professional information and interests
+          </p>
+        </div>
 
-          {message && (
-            <div className={`mb-6 p-4 rounded-md ${
-              message.type === 'success' 
-                ? 'bg-green-50 border border-green-200 text-green-800'
-                : 'bg-red-50 border border-red-200 text-red-800'
-            }`}>
-              {message.text}
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-8">
-            {/* Personal Information */}
-            <div>
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">
-                Personal Information
-              </h2>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="md:col-span-2">
-                  <label htmlFor="display_name" className="block text-sm font-medium text-gray-700 mb-1">
-                    Display Name *
-                  </label>
-                  <input
-                    type="text"
-                    id="display_name"
-                    required
-                    value={formData.display_name}
-                    onChange={(e) => updateFormData('display_name', e.target.value)}
-                    className="input w-full"
-                    placeholder="Your full name"
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="job_title" className="block text-sm font-medium text-gray-700 mb-1">
-                    Job Title *
-                  </label>
-                  <input
-                    type="text"
-                    id="job_title"
-                    required
-                    value={formData.job_title}
-                    onChange={(e) => updateFormData('job_title', e.target.value)}
-                    className="input w-full"
-                    placeholder="e.g. Account Executive"
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="company" className="block text-sm font-medium text-gray-700 mb-1">
-                    Company *
-                  </label>
-                  <input
-                    type="text"
-                    id="company"
-                    required
-                    value={formData.company}
-                    onChange={(e) => updateFormData('company', e.target.value)}
-                    className="input w-full"
-                    placeholder="e.g. Salesforce"
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="experience_level" className="block text-sm font-medium text-gray-700 mb-1">
-                    Experience Level *
-                  </label>
-                  <select
-                    id="experience_level"
-                    required
-                    value={formData.experience_level}
-                    onChange={(e) => updateFormData('experience_level', e.target.value)}
-                    className="input w-full"
-                  >
-                    <option value="">Select experience level</option>
-                    <option value="junior">Junior (0-2 years)</option>
-                    <option value="mid">Mid-level (3-5 years)</option>
-                    <option value="senior">Senior (6-10 years)</option>
-                    <option value="executive">Executive (10+ years)</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-1">
-                    Location *
-                  </label>
-                  <input
-                    type="text"
-                    id="location"
-                    required
-                    value={formData.location}
-                    onChange={(e) => updateFormData('location', e.target.value)}
-                    className="input w-full"
-                    placeholder="e.g. San Francisco, CA"
-                  />
-                </div>
-
-                <div className="md:col-span-2">
-                  <label htmlFor="linkedin_url" className="block text-sm font-medium text-gray-700 mb-1">
-                    LinkedIn Profile (Optional)
-                  </label>
-                  <input
-                    type="url"
-                    id="linkedin_url"
-                    value={formData.linkedin_url}
-                    onChange={(e) => updateFormData('linkedin_url', e.target.value)}
-                    className="input w-full"
-                    placeholder="https://linkedin.com/in/yourprofile"
-                  />
-                </div>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="card">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">
+              Basic Information
+            </h2>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Display Name *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={formData.display_name}
+                  onChange={(e) => setFormData(prev => ({...prev, display_name: e.target.value}))}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
               </div>
-            </div>
-
-            {/* Bio Section */}
-            <div>
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">
-                About You
-              </h2>
               
               <div>
-                <label htmlFor="bio" className="block text-sm font-medium text-gray-700 mb-1">
-                  Professional Bio *
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Job Title *
                 </label>
-                <textarea
-                  id="bio"
+                <input
+                  type="text"
                   required
-                  rows={6}
-                  value={formData.bio}
-                  onChange={(e) => updateFormData('bio', e.target.value)}
-                  className="input w-full resize-none"
-                  placeholder="Tell us about your sales experience, expertise areas, and what you enjoy about sales. What would you like to share or learn from others?"
+                  value={formData.job_title}
+                  onChange={(e) => setFormData(prev => ({...prev, job_title: e.target.value}))}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
-                <p className="text-sm text-gray-500 mt-1">
-                  {formData.bio.length} characters
-                </p>
               </div>
             </div>
 
-            {/* Topics of Interest */}
-            <div>
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">
-                Topics of Interest
-              </h2>
-              <p className="text-gray-600 mb-6">
-                Select topics you're interested in discussing during coffee chats
-              </p>
-
-              <div className="space-y-6">
-                {Object.entries(topicsByCategory).map(([category, categoryTopics]) => (
-                  <div key={category} className="border border-gray-200 rounded-lg p-4">
-                    <div className="flex items-center gap-2 mb-3">
-                      <span className="text-lg">{getCategoryIcon(category)}</span>
-                      <h3 className="font-medium text-gray-900">{category}</h3>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 gap-2">
-                      {categoryTopics.map((topic) => (
-                        <label key={topic.id} className="flex items-start gap-3 cursor-pointer p-2 rounded hover:bg-gray-50">
-                          <input
-                            type="checkbox"
-                            checked={formData.topics_of_interest.includes(topic.id)}
-                            onChange={() => toggleTopic(topic.id)}
-                            className="mt-1 h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
-                          />
-                          <div>
-                            <div className="font-medium text-sm text-gray-900">
-                              {topic.metadata.topic_name}
-                            </div>
-                            {topic.metadata.description && (
-                              <div className="text-xs text-gray-600 mt-1">
-                                {topic.metadata.description}
-                              </div>
-                            )}
-                          </div>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
-                ))}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Company *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={formData.company}
+                  onChange={(e) => setFormData(prev => ({...prev, company: e.target.value}))}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
               </div>
-            </div>
-
-            {/* Matching Preferences */}
-            <div>
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">
-                Matching Preferences
-              </h2>
               
-              <div className="border border-gray-200 rounded-lg p-4">
-                <div className="flex items-center gap-3">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Experience Level *
+                </label>
+                <select
+                  required
+                  value={formData.experience_level}
+                  onChange={(e) => setFormData(prev => ({...prev, experience_level: e.target.value}))}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="">Select experience level</option>
+                  <option value="junior">Junior (0-2 years)</option>
+                  <option value="mid">Mid-level (3-5 years)</option>
+                  <option value="senior">Senior (6-10 years)</option>
+                  <option value="executive">Executive (10+ years)</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Location *
+              </label>
+              <input
+                type="text"
+                required
+                value={formData.location}
+                onChange={(e) => setFormData(prev => ({...prev, location: e.target.value}))}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="e.g., San Francisco, CA or Remote"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Bio
+              </label>
+              <textarea
+                rows={4}
+                value={formData.bio}
+                onChange={(e) => setFormData(prev => ({...prev, bio: e.target.value}))}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Tell others about your experience and what you're passionate about..."
+              />
+            </div>
+          </div>
+
+          <div className="card">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">
+              Contact & Meeting Information
+            </h2>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                LinkedIn URL
+              </label>
+              <input
+                type="url"
+                value={formData.linkedin_url}
+                onChange={(e) => setFormData(prev => ({...prev, linkedin_url: e.target.value}))}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="https://linkedin.com/in/yourprofile"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Personal Zoom Room Link
+              </label>
+              <input
+                type="url"
+                value={formData.zoom_link}
+                onChange={(e) => setFormData(prev => ({...prev, zoom_link: e.target.value}))}
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="https://zoom.us/j/your-personal-room-id"
+              />
+              <p className="text-sm text-gray-600 mt-1">
+                Optional: Add your personal Zoom room link to be used for coffee chat meetings. 
+                If not provided, meeting organizers will create rooms as needed.
+              </p>
+            </div>
+          </div>
+
+          <div className="card">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">
+              Topics of Interest
+            </h2>
+            <p className="text-gray-600 mb-4">
+              Select the topics you're interested in discussing during coffee chats
+            </p>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {topics.map((topic) => (
+                <label
+                  key={topic.id}
+                  className={`flex items-center p-3 border rounded-lg cursor-pointer transition-colors duration-200 ${
+                    formData.topics_of_interest.includes(topic.id)
+                      ? 'border-blue-500 bg-blue-50'
+                      : 'border-gray-300 hover:border-gray-400'
+                  }`}
+                >
                   <input
                     type="checkbox"
-                    id="available_for_matching"
-                    checked={formData.available_for_matching}
-                    onChange={(e) => updateFormData('available_for_matching', e.target.checked)}
-                    className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
+                    checked={formData.topics_of_interest.includes(topic.id)}
+                    onChange={() => handleTopicToggle(topic.id)}
+                    className="mr-3 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                   />
-                  <label htmlFor="available_for_matching" className="text-sm text-gray-700">
-                    I'm available for weekly coffee chat matching
-                  </label>
-                </div>
-                <p className="text-xs text-gray-500 mt-1 ml-7">
-                  When unchecked, you won't be included in automatic matching but can still participate in scheduled chats
-                </p>
-              </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium text-gray-900">
+                      {topic.metadata.topic_name}
+                    </div>
+                    {topic.metadata.description && (
+                      <div className="text-sm text-gray-600 mt-1">
+                        {topic.metadata.description}
+                      </div>
+                    )}
+                  </div>
+                </label>
+              ))}
             </div>
+          </div>
 
-            {/* Submit Button */}
-            <div className="flex justify-end pt-6 border-t border-gray-200">
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="btn-primary px-8 py-3 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isSubmitting ? 'Updating Profile...' : 'Update Profile'}
-              </button>
-            </div>
-          </form>
-        </div>
+          <div className="card">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">
+              Matching Settings
+            </h2>
+            
+            <label className="flex items-center">
+              <input
+                type="checkbox"
+                checked={formData.available_for_matching}
+                onChange={(e) => setFormData(prev => ({...prev, available_for_matching: e.target.checked}))}
+                className="mr-3 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+              />
+              <div>
+                <div className="font-medium text-gray-900">
+                  Available for matching
+                </div>
+                <div className="text-sm text-gray-600">
+                  When enabled, you may be matched with other professionals for coffee chats
+                </div>
+              </div>
+            </label>
+          </div>
+
+          <div className="flex justify-between">
+            <button
+              type="button"
+              onClick={() => router.push('/dashboard')}
+              className="px-6 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200"
+            >
+              Cancel
+            </button>
+            
+            <button
+              type="submit"
+              disabled={saving}
+              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 disabled:opacity-50"
+            >
+              {saving ? 'Saving...' : 'Save Changes'}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   )

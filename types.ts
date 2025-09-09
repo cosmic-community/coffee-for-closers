@@ -30,6 +30,7 @@ export interface User extends CosmicObject {
     };
     bio: string;
     linkedin_url?: string;
+    zoom_link?: string;
     topics_of_interest?: Topic[] | string[];
     available_for_matching: boolean;
     created_at: string;
@@ -54,6 +55,7 @@ export interface UserProfile extends CosmicObject {
     };
     bio: string;
     linkedin_url?: string;
+    zoom_link?: string;
     topics_of_interest?: Topic[] | string[];
     available_for_matching: boolean;
   };
@@ -118,6 +120,7 @@ export interface SignupData {
   location: string;
   bio?: string;
   linkedin_url?: string;
+  zoom_link?: string;
   topics_of_interest?: string[];
 }
 

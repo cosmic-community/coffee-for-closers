@@ -97,6 +97,7 @@ export async function createUserProfile(data: any): Promise<UserProfile> {
         location: data.location,
         bio: data.bio,
         linkedin_url: data.linkedin_url || '',
+        zoom_link: data.zoom_link || '',
         topics_of_interest: data.topics_of_interest || [],
         available_for_matching: data.available_for_matching !== false
       }
@@ -209,9 +210,16 @@ export async function createCoffeeChat(
   participant1: UserProfile,
   participant2: UserProfile,
   scheduledDate: string,
-  scheduledTime: string
+  scheduledTime: string,
+  meetingLink?: string
 ): Promise<CoffeeChat> {
   try {
+    // Use participant's personal Zoom link if available, otherwise use provided meeting link
+    const finalMeetingLink = meetingLink || 
+      participant1.metadata.zoom_link || 
+      participant2.metadata.zoom_link || 
+      undefined;
+
     const response = await cosmic.objects.insertOne({
       type: 'coffee-chats',
       title: `${participant1.metadata.display_name} & ${participant2.metadata.display_name} Coffee Chat`,
@@ -220,6 +228,7 @@ export async function createCoffeeChat(
         participant_2: participant2.id,
         scheduled_date: scheduledDate,
         scheduled_time: scheduledTime,
+        meeting_link: finalMeetingLink,
         status: 'scheduled',
         completion_confirmed: false
       }
